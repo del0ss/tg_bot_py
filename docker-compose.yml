@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:14
+    container_name: postgres
+    ports:
+      - "${POSTGRES_PORT}:${DEFAULT_POSTGRES_PORT}"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      network:
+        ipv4_address: "${POSTGRES_IP}"
+  bot:
+    container_name: tg-bot
+    build: .
+    command: python -u main.py
+    networks:
+      network:
+        ipv4_address: "${BOT_IP}"
+    volumes:
+      - .:/code
+    env_file:
+      - .env
+      - bot.env
+    depends_on:
+      - db
+volumes:
+  postgres-data:
+
+networks:
+  network:
+    driver: bridge
+    external: false
+    name: med-tg-bot
+    ipam:
+      config:
+        - subnet: "${SUBNET}"
+          gateway: "${GATEWAY}"
